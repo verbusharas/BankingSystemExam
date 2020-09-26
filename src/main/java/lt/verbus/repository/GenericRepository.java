@@ -1,8 +1,5 @@
 package lt.verbus.repository;
 
-import lt.verbus.config.QueriesMySql;
-import lt.verbus.model.Bank;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;

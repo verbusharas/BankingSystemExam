@@ -26,11 +26,11 @@ public class BankRepository extends GenericRepository<Bank> {
 
     @Override
     public Bank save(Bank bank) throws SQLException {
-        preparedStatement = connection.prepareStatement(QueriesMySql
-                .CREATE_BANK);
-        preparedStatement.setString(1, bank.getName());
-        preparedStatement.setString(2, bank.getBic());
-        preparedStatement.execute();
+        String query = String.format("INSERT INTO bank " +
+                        "(name, bic) " +
+                        "VALUES (%s, %s)",
+                bank.getName(), bank.getBic());
+        statement.executeQuery(query);
         return findByBic(bank.getBic());
     }
 

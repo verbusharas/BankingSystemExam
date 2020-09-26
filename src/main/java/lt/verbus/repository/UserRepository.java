@@ -26,11 +26,11 @@ public class UserRepository extends GenericRepository<User> {
 
     @Override
     public User save(User user) throws SQLException {
-        preparedStatement = connection.prepareStatement(QueriesMySql.CREATE_USER);
-        preparedStatement.setString(1, user.getUsername());
-        preparedStatement.setString(2, user.getFullName());
-        preparedStatement.setString(3, user.getPhoneNumber());
-        preparedStatement.execute();
+        String query = String.format("INSERT INTO user " +
+                        "(username, full_name, phone_number) " +
+                        "VALUES (%s, %s, %s)",
+                user.getUsername(), user.getFullName(), user.getPhoneNumber());
+        statement.executeQuery(query);
         return findByUsername(user.getUsername());
     }
 

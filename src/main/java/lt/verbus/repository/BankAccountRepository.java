@@ -7,13 +7,9 @@ import lt.verbus.model.CardType;
 import lt.verbus.model.User;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class BankAccountRepository extends GenericRepository<BankAccount> {
-
-    private BankRepository bankRepository;
-    private UserRepository userRepository;
 
     public BankAccountRepository(Connection connection) throws SQLException {
         super(connection, "bank_account");
@@ -44,13 +40,15 @@ public class BankAccountRepository extends GenericRepository<BankAccount> {
 
     @Override
     public BankAccount save(BankAccount bankAccount) throws SQLException {
-        preparedStatement = connection.prepareStatement(QueriesMySql.CREATE_BANK_ACCOUNT);
-        preparedStatement.setLong(1, bankAccount.getBank().getId());
-        preparedStatement.setString(2, bankAccount.getIban());
-        preparedStatement.setString(3, bankAccount.getCardType().toString());
-        preparedStatement.setLong(4, bankAccount.getHolder().getId());
-        preparedStatement.setDouble(5, bankAccount.getBalance());
-        preparedStatement.execute();
+        String query = String.format("INSERT INTO bank_account " +
+                        "(bank_id, iban, card_type, user_id, balance) " +
+                        "VALUES (%s, %s, %s, %s, %s)",
+                bankAccount.getBank().getId(),
+                bankAccount.getIban(),
+                bankAccount.getCardType().toString(),
+                bankAccount.getHolder().getId(),
+                bankAccount.getBalance());
+        statement.executeQuery(query);
         return findByIban(bankAccount.getIban());
     }
 
@@ -62,7 +60,6 @@ public class BankAccountRepository extends GenericRepository<BankAccount> {
     public void delete(Long id) throws SQLException {
         super.delete(id);
     }
-
 
     protected BankAccount convertTableToObject(ResultSet table) throws SQLException {
         BankAccount bankAccount = new BankAccount();
