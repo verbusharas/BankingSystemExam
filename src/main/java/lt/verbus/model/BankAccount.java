@@ -7,14 +7,7 @@ public class BankAccount {
     private String iban;
     private CardType cardType;
     private User holder;
-
-    public BankAccount(long id, Bank bank, String iban, CardType cardType, User holder) {
-        this.id = id;
-        this.bank = bank;
-        this.iban = iban;
-        this.cardType = cardType;
-        this.holder = holder;
-    }
+    private double balance;
 
     public long getId() {
         return id;
@@ -55,4 +48,18 @@ public class BankAccount {
     public void setHolder(User holder) {
         this.holder = holder;
     }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("[BANK ACCOUNT] |%-3d %-15s| %-15s |  %8s EUR | %6s | %s", id, iban, bank.getName(), balance, cardType, holder.getFullName());
+    }
+
 }

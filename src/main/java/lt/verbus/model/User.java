@@ -1,20 +1,14 @@
 package lt.verbus.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class User {
 
     private long id;
-    private String name;
-    private String surname;
-    private List<BankAccount> bankAccounts;
-
-    public User(long id, String name, String surname, List<BankAccount> bankAccounts) {
-        this.id = id;
-        this.name = name;
-        this.surname = surname;
-        this.bankAccounts = bankAccounts;
-    }
+    private String username;
+    private String fullName;
+    private String phoneNumber;
 
     public long getId() {
         return id;
@@ -24,27 +18,33 @@ public class User {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getUsername() {
+        return username;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getSurname() {
-        return surname;
+    public String getFullName() {
+        return fullName;
     }
 
-    public void setSurname(String surname) {
-        this.surname = surname;
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
-    public List<BankAccount> getBankAccounts() {
-        return bankAccounts;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setBankAccounts(List<BankAccount> bankAccounts) {
-        this.bankAccounts = bankAccounts;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("[USER] |%d %-15s| %-15s | %s",
+                id, username, fullName, phoneNumber);
     }
 }

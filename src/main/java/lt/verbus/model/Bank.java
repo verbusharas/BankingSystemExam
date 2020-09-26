@@ -4,14 +4,8 @@ import java.util.List;
 
 public class Bank {
     private long id;
+    private String bic;
     private String name;
-    private List<BankAccount> bankAccounts;
-
-    public Bank(long id, String name, List<BankAccount> bankAccounts) {
-        this.id = id;
-        this.name = name;
-        this.bankAccounts = bankAccounts;
-    }
 
     public long getId() {
         return id;
@@ -19,6 +13,14 @@ public class Bank {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public String getBic() {
+        return bic;
+    }
+
+    public void setBic(String bic) {
+        this.bic = bic;
     }
 
     public String getName() {
@@ -29,11 +31,9 @@ public class Bank {
         this.name = name;
     }
 
-    public List<BankAccount> getBankAccounts() {
-        return bankAccounts;
-    }
-
-    public void setBankAccounts(List<BankAccount> bankAccounts) {
-        this.bankAccounts = bankAccounts;
+    @Override
+    public String toString() {
+        return String.format("[BANK] |%d %-8s| %-15s",
+                id, bic, name);
     }
 }
