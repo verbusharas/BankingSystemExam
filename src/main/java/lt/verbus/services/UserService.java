@@ -1,5 +1,6 @@
 package lt.verbus.services;
 
+import lt.verbus.exception.UserNotFoundException;
 import lt.verbus.model.User;
 import lt.verbus.repository.UserRepository;
 
@@ -18,8 +19,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User findByUsername(String username) throws SQLException {
-        //TODO: validate if exists
+    public User findByUsername(String username) throws SQLException, UserNotFoundException {
         return userRepository.findByUsername(username);
     }
 
@@ -28,7 +28,7 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-    public User save(User user) throws SQLException {
+    public User save(User user) throws SQLException, UserNotFoundException {
         //TODO: validate if unique
         return userRepository.save(user);
     }

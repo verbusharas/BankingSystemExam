@@ -1,6 +1,6 @@
 package lt.verbus.services;
 
-import lt.verbus.exception.InstanceAlreadyExistsException;
+import lt.verbus.exception.UserNotFoundException;
 import lt.verbus.model.Bank;
 import lt.verbus.repository.BankRepository;
 
@@ -19,23 +19,28 @@ public class BankService {
         return bankRepository.findAll();
     }
 
-    public Bank findByBic(String bic) throws SQLException {
+    public Bank findByBic(String bic) throws SQLException, UserNotFoundException {
+        //TODO: validate if exists
         return bankRepository.findByBic(bic);
     }
 
     public Bank findById(long id) throws SQLException {
+        //TODO: validate if exists
         return bankRepository.findById(id);
     }
 
-    public Bank save(Bank bank) throws SQLException {
+    public Bank save(Bank bank) throws SQLException, UserNotFoundException {
+        //TODO: validate if unique
         return bankRepository.save(bank);
     }
 
     public void update(Bank bank) {
+        //TODO: validate if exists
         bankRepository.update(bank);
     }
 
     public void delete(Long id) throws SQLException {
+        //TODO: validate if exists
         bankRepository.delete(id);
     }
 }

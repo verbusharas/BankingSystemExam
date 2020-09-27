@@ -1,5 +1,7 @@
 package lt.verbus.repository;
 
+import lt.verbus.exception.UserNotFoundException;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +24,10 @@ public abstract class GenericRepository<T> {
         return convertTableToList(table);
     }
 
-    protected T findByUniqueCode(String codeColumnName, String code) throws SQLException {
+    protected T findByUniqueCode(String codeColumnName, String code) throws SQLException, UserNotFoundException {
         String query = String.format("SELECT * FROM %s WHERE %s = \"%s\"", databaseTableName, codeColumnName, code);
         ResultSet table = statement.executeQuery(query);
-        table.next();
+        if(!table.next()) throw new UserNotFoundException();
         return convertTableToObject(table);
     }
 
@@ -36,7 +38,7 @@ public abstract class GenericRepository<T> {
         return convertTableToObject(table);
     }
 
-    abstract T save(T t) throws SQLException;
+    abstract T save(T t) throws SQLException, UserNotFoundException;
 
     abstract void update(T t) throws SQLException;
 

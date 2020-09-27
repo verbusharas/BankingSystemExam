@@ -1,6 +1,6 @@
 package lt.verbus.repository;
 
-import lt.verbus.config.QueriesMySql;
+import lt.verbus.exception.UserNotFoundException;
 import lt.verbus.model.User;
 
 import java.sql.*;
@@ -16,7 +16,7 @@ public class UserRepository extends GenericRepository<User> {
         return super.findAll();
     }
 
-    public User findByUsername(String username) throws SQLException {
+    public User findByUsername(String username) throws SQLException, UserNotFoundException {
         return super.findByUniqueCode("username", username);
     }
 
@@ -25,7 +25,7 @@ public class UserRepository extends GenericRepository<User> {
     }
 
     @Override
-    public User save(User user) throws SQLException {
+    public User save(User user) throws SQLException, UserNotFoundException {
         String query = String.format("INSERT INTO user " +
                         "(username, full_name, phone_number) " +
                         "VALUES (%s, %s, %s)",

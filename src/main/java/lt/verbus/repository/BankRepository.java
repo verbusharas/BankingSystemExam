@@ -1,6 +1,6 @@
 package lt.verbus.repository;
 
-import lt.verbus.config.QueriesMySql;
+import lt.verbus.exception.UserNotFoundException;
 import lt.verbus.model.Bank;
 
 import java.sql.*;
@@ -16,7 +16,7 @@ public class BankRepository extends GenericRepository<Bank> {
         return super.findAll();
     }
 
-    public Bank findByBic(String bic) throws SQLException {
+    public Bank findByBic(String bic) throws SQLException, UserNotFoundException {
         return super.findByUniqueCode("bic", bic);
     }
 
@@ -25,7 +25,7 @@ public class BankRepository extends GenericRepository<Bank> {
     }
 
     @Override
-    public Bank save(Bank bank) throws SQLException {
+    public Bank save(Bank bank) throws SQLException, UserNotFoundException {
         String query = String.format("INSERT INTO bank " +
                         "(name, bic) " +
                         "VALUES (%s, %s)",
