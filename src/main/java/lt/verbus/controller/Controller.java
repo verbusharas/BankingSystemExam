@@ -1,16 +1,10 @@
 package lt.verbus.controller;
 
 import lt.verbus.exception.InsufficientFundsException;
-import lt.verbus.exception.UserNotFoundException;
-import lt.verbus.model.BankAccount;
-import lt.verbus.model.CardType;
-import lt.verbus.model.Transaction;
-import lt.verbus.model.User;
+import lt.verbus.exception.EntityNotFoundException;
+import lt.verbus.model.*;
 import lt.verbus.repository.*;
-import lt.verbus.services.BankAccountService;
-import lt.verbus.services.BankService;
-import lt.verbus.services.TransactionService;
-import lt.verbus.services.UserService;
+import lt.verbus.services.*;
 import lt.verbus.view.*;
 
 import java.io.IOException;
@@ -23,11 +17,13 @@ public class Controller {
     private UserRepository userRepository;
     private BankAccountRepository bankAccountRepository;
     private TransactionRepository transactionRepository;
+    private CreditRepository creditRepository;
 
     private BankService bankService;
     private UserService userService;
     private BankAccountService bankAccountService;
     private TransactionService transactionService;
+    private CreditService creditService;
 
     private Scanner consoleInput;
 
@@ -38,26 +34,30 @@ public class Controller {
         userRepository = new UserRepository(ConnectionPool.getConnection(SqlDialect.MY_SQL));
         bankAccountRepository = new BankAccountRepository(ConnectionPool.getConnection(SqlDialect.MY_SQL));
         transactionRepository = new TransactionRepository(ConnectionPool.getConnection(SqlDialect.MY_SQL));
+        creditRepository = new CreditRepository(ConnectionPool.getConnection(SqlDialect.MY_SQL));
+
         bankService = new BankService(bankRepository);
         userService = new UserService(userRepository);
         bankAccountService = new BankAccountService(bankAccountRepository);
         transactionService = new TransactionService(transactionRepository);
+        creditService = new CreditService(creditRepository);
+
         consoleInput = new Scanner(System.in);
     }
 
-    public void launchApp() throws SQLException {
+    public void launchApp() throws SQLException, EntityNotFoundException {
         boolean stayInMenu = true;
         currentUser = null;
         while (stayInMenu) {
             MainMenu.display();
-            switch (consoleInput.next()) {
+            switch (consoleInput.nextLine()) {
                 case "0":
                     System.exit(1);
                 case "1":
                     switchToLoginMenu();
                     break;
                 case "2":
-                    ConsoleUi.displayRegisterMenu();
+                    switchToRegistrationMenu();
                     break;
                 default:
                     ErrorMessenger.warnAboutFalseMenuEntry();
@@ -65,11 +65,34 @@ public class Controller {
         }
     }
 
+    private void switchToRegistrationMenu() throws SQLException, EntityNotFoundException {
+        RegisterMenu.displayTitle();
+        User user = new User();
+        while (true) {
+            RegisterMenu.displayUsernameRequest();
+            user.setUsername(consoleInput.nextLine());
+            try {
+                userRepository.findByUsername(user.getUsername());
+            } catch (EntityNotFoundException ex) {
+                break;
+            }
+            ErrorMessenger.warnAboutUserExists();
+        }
+        RegisterMenu.displayFullNameRequest();
+        user.setFullName(consoleInput.nextLine());
+        RegisterMenu.displayPhonenumberRequest();
+        user.setPhoneNumber(consoleInput.nextLine());
+        userService.save(user);
+        InfoMessenger.informAboutSuccessfullyCreatedUser();
+    }
+
+
     public void switchToLoginMenu() throws SQLException {
         boolean stayInMenu = true;
         while (stayInMenu) {
             LoginMenu.display();
-            String userChoice = consoleInput.next();
+            ListPrinter.printUsernameCheatList(userService.findAll());
+            String userChoice = consoleInput.nextLine();
             if (userChoice.equals("0")) {
                 stayInMenu = false;
             } else {
@@ -77,36 +100,45 @@ public class Controller {
                     currentUser = userService.findByUsername(userChoice);
                     switchToUserMenu();
                     stayInMenu = false;
-                } catch (UserNotFoundException e) {
+                } catch (EntityNotFoundException ex) {
                     ErrorMessenger.warnAboutUserNotFound(userChoice);
+                } catch (InsufficientFundsException e) {
+                    e.printStackTrace();
                 }
             }
         }
     }
 
 
-    public void switchToUserMenu() throws SQLException {
+    public void switchToUserMenu() throws SQLException, InsufficientFundsException, EntityNotFoundException {
         boolean stayInMenu = true;
         while (stayInMenu) {
             UserHomeMenu.display(currentUser);
-            switch (consoleInput.next()) {
+            switch (consoleInput.nextLine()) {
                 case "0":
                     stayInMenu = false;
                     break;
                 case "1":
-                    ListPrinter.printNumeratedList(bankAccountRepository.findAllBelongingTo(currentUser));
+                    ListPrinter.printNumeratedListToConsole(bankAccountRepository.findAllBelongingTo(currentUser));
+                    ListPrinter.printNumeratedListToConsole(creditService.findAllByDebtor(currentUser));
                     break;
                 case "2":
-                    System.out.println("2 selected");
+                    switchToTransactionListMenu();
                     break;
                 case "3":
-                    switchToTopUpMenu();
+                    switchToExportTransactionsMenu();
                     break;
                 case "4":
-                    switchToWithdrawMenu();
+                    switchToTopUpMenu();
                     break;
                 case "5":
+                    switchToWithdrawMenu();
+                    break;
+                case "6":
                     switchToTransferMoney();
+                    break;
+                case "7":
+                    switchToOpenNewAccountMenu();
                     break;
                 default:
                     ErrorMessenger.warnAboutFalseMenuEntry();
@@ -114,71 +146,125 @@ public class Controller {
         }
     }
 
-    public void switchToTopUpMenu() throws SQLException {
+
+    private void switchToTransactionListMenu() throws SQLException {
+        BankAccount selectedBankAccount = askToChooseFromList(
+                bankAccountRepository.findAllBelongingTo(currentUser), "bank account");
+        ListPrinter.printNumeratedListToConsole(transactionService.findAllByBankAccount(selectedBankAccount));
+    }
+
+    private void switchToExportTransactionsMenu() throws SQLException {
+        BankAccount selectedBankAccount = askToChooseFromList(
+                bankAccountRepository.findAllBelongingTo(currentUser), "bank account");
+        UserSpecifyFileNameMenu.display();
+        ListPrinter.printListToFile(transactionService
+                .findAllByBankAccount(selectedBankAccount), consoleInput.nextLine());
+        InfoMessenger.informAboutSuccesfulExport();
+    }
+
+
+    public void switchToTopUpMenu() throws SQLException, InsufficientFundsException, EntityNotFoundException {
         UserTopUpMenu.display();
-        Double amount = Double.parseDouble(consoleInput.next());
+        double amount = Double.parseDouble(consoleInput.nextLine());
         //TODO: validate for numeric input
-        BankAccount bankAccount = askToSelectAccount();
-        //TODO: implement account top up operation
-        System.out.println(bankAccount);
+        BankAccount selectedBankAccount = askToChooseFromList(
+                bankAccountRepository.findAllBelongingTo(currentUser), "bank account");
+        Transaction transaction = new Transaction();
+        transaction.setAmount(amount);
+        transaction.setSender(null);
+        transaction.setReceiver(selectedBankAccount);
+        transactionService.execute(transaction);
+        InfoMessenger.informAboutSuccessfulTopUp();
     }
 
-    public void switchToWithdrawMenu() throws SQLException {
+    public void switchToWithdrawMenu() throws SQLException, InsufficientFundsException, EntityNotFoundException {
         UserWithdrawMenu.display();
-        Double amount = Double.parseDouble(consoleInput.next());
+        double amount = Double.parseDouble(consoleInput.nextLine());
         //TODO: validate for numeric input
-        BankAccount bankAccount = askToSelectAccount();
-        if (bankAccount.getBalance() < amount && bankAccount.getCardType().equals(CardType.DEBIT)) {
+        BankAccount selectedBankAccount = askToChooseFromList(
+                bankAccountRepository.findAllBelongingTo(currentUser), "bank account");
+        Transaction transaction = new Transaction();
+        transaction.setAmount(amount);
+        transaction.setSender(selectedBankAccount);
+        transaction.setReceiver(null);
+        try {
+            transactionService.execute(transaction);
+            InfoMessenger.informAboutSuccessfulWithdrawal();
+        } catch (InsufficientFundsException | EntityNotFoundException e) {
             ErrorMessenger.warnAboutInsufficientFunds();
-        } else {
-            //TODO: implement withdraw operation
         }
-        System.out.println(bankAccount);
     }
 
-    public void switchToTransferMoney() throws SQLException {
+    public void switchToTransferMoney() throws SQLException, EntityNotFoundException {
         UserTransferMenu.displayAmountRequest();
-        Double amount = Double.parseDouble(consoleInput.next());
+        double amount = Double.parseDouble(consoleInput.nextLine());
         //TODO: validate for numeric input
-        BankAccount selectedSenderBankAccount = askToSelectAccount();
+        BankAccount selectedSenderBankAccount = askToChooseFromList(
+                bankAccountRepository.findAllBelongingTo(currentUser), "bank account");
         User receivingUser = null;
         UserTransferMenu.displayReceiverRequest();
-        String receiverUsernameEntered = consoleInput.next();
+        ListPrinter.printUsernameCheatList(userService.findAll());
+        String receiverUsernameEntered = consoleInput.nextLine();
         try {
-            System.out.println("Looking for receiver in database...");
             receivingUser = userService.findByUsername(receiverUsernameEntered);
-            System.out.print("Receiver found:");
-            System.out.println(receivingUser.getFullName());
-        } catch (UserNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             ErrorMessenger.warnAboutUserNotFound(receiverUsernameEntered);
         }
-
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);
         transaction.setSender(selectedSenderBankAccount);
         transaction.setReceiver(bankAccountService.findAllBelongingTo(receivingUser).get(0));
         try {
             transactionService.execute(transaction);
-        } catch (InsufficientFundsException e) {
+        } catch (InsufficientFundsException ex) {
             ErrorMessenger.warnAboutInsufficientFunds();
         }
         InfoMessenger.informAboutSuccessfulTransfer();
     }
 
-
-    private BankAccount askToSelectAccount() throws SQLException {
-        List<BankAccount> bankAccounts = bankAccountRepository.findAllBelongingTo(currentUser);
-        int chosenAccountNo = 1;
+    private void switchToOpenNewAccountMenu() throws SQLException, EntityNotFoundException {
+        OpenNewAccountMenu.displayTitle();
+        BankAccount bankAccount = new BankAccount();
+        Bank bank = askToChooseFromList(bankService.findAll(), "bank");
+        bankAccount.setBank(bank);
         boolean stayInMenu = true;
         while (stayInMenu) {
-            UserChooseAccountMenu.display();
-            ListPrinter.printNumeratedList(bankAccounts);
-            chosenAccountNo = Integer.parseInt(consoleInput.next());
-            //TODO: validate for numeric input
-            if (chosenAccountNo < 1 || chosenAccountNo > bankAccounts.size()) {
+            OpenNewAccountMenu.displayCardTypeSelectRequest();
+            switch (consoleInput.nextLine()) {
+                case "1": {
+                    bankAccount.setCardType(CardType.CREDIT);
+                    stayInMenu = false;
+                }
+                break;
+                case "2": {
+                    bankAccount.setCardType(CardType.DEBIT);
+                    stayInMenu = false;
+                }
+                break;
+                default:
+                    ErrorMessenger.warnAboutFalseMenuEntry();
+            }
+        }
+        bankAccount.setHolder(currentUser);
+        bankAccount.setBalance(0);
+        bankAccount.setIban(bankAccountService.generateIban());
+        bankAccountService.save(bankAccount);
+        InfoMessenger.informAboutSuccessfullyOpenedBankAccount(bankAccount);
+    }
+
+
+    private <T> T askToChooseFromList(List<T> list, String nameOfListEntity) {
+        int choice = 1;
+        boolean stayInMenu = true;
+        while (stayInMenu) {
+            UserChooseFromListMenu.display(nameOfListEntity);
+            ListPrinter.printNumeratedListToConsole(list);
+            choice = Integer.parseInt(consoleInput.nextLine());
+            if (choice < 1 || choice > list.size()) {
                 ErrorMessenger.warnAboutFalseMenuEntry();
             } else stayInMenu = false;
         }
-        return bankAccounts.get(chosenAccountNo - 1);
+        return list.get(choice - 1);
     }
+
 }

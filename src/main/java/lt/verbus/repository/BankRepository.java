@@ -1,6 +1,6 @@
 package lt.verbus.repository;
 
-import lt.verbus.exception.UserNotFoundException;
+import lt.verbus.exception.EntityNotFoundException;
 import lt.verbus.model.Bank;
 
 import java.sql.*;
@@ -16,7 +16,7 @@ public class BankRepository extends GenericRepository<Bank> {
         return super.findAll();
     }
 
-    public Bank findByBic(String bic) throws SQLException, UserNotFoundException {
+    public Bank findByBic(String bic) throws SQLException, EntityNotFoundException {
         return super.findByUniqueCode("bic", bic);
     }
 
@@ -25,18 +25,21 @@ public class BankRepository extends GenericRepository<Bank> {
     }
 
     @Override
-    public Bank save(Bank bank) throws SQLException, UserNotFoundException {
+    public Bank save(Bank bank) throws SQLException, EntityNotFoundException {
         String query = String.format("INSERT INTO bank " +
                         "(name, bic) " +
-                        "VALUES (%s, %s)",
+                        "VALUES (\"%s\", \"%s\")",
                 bank.getName(), bank.getBic());
-        statement.executeQuery(query);
+        statement.execute(query);
         return findByBic(bank.getBic());
     }
 
     @Override
-    public void update(Bank bank) {
-        //TODO implement update
+    public void update(Bank bank) throws SQLException {
+        String query = String.format("UPDATE bank SET " +
+                        "name = \"%s\", bic = \"%s\" WHERE id = %d",
+                bank.getName(), bank.getBic(), bank.getId());
+        statement.executeUpdate(query);
     }
 
     public void delete(Long id) throws SQLException {

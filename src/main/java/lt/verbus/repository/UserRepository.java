@@ -1,6 +1,6 @@
 package lt.verbus.repository;
 
-import lt.verbus.exception.UserNotFoundException;
+import lt.verbus.exception.EntityNotFoundException;
 import lt.verbus.model.User;
 
 import java.sql.*;
@@ -16,7 +16,7 @@ public class UserRepository extends GenericRepository<User> {
         return super.findAll();
     }
 
-    public User findByUsername(String username) throws SQLException, UserNotFoundException {
+    public User findByUsername(String username) throws SQLException, EntityNotFoundException {
         return super.findByUniqueCode("username", username);
     }
 
@@ -25,18 +25,23 @@ public class UserRepository extends GenericRepository<User> {
     }
 
     @Override
-    public User save(User user) throws SQLException, UserNotFoundException {
+    public User save(User user) throws SQLException, EntityNotFoundException {
         String query = String.format("INSERT INTO user " +
                         "(username, full_name, phone_number) " +
-                        "VALUES (%s, %s, %s)",
+                        "VALUES (\"%s\", \"%s\", \"%s\")",
                 user.getUsername(), user.getFullName(), user.getPhoneNumber());
-        statement.executeQuery(query);
+        statement.execute(query);
         return findByUsername(user.getUsername());
     }
 
     @Override
-    public void update(User user) {
-        //TODO implement update
+    public void update(User user) throws SQLException {
+        String query = String.format("UPDATE user SET " +
+                        "username = \"%s\", full_name = \"%s\", phone_number = \"%s\" " +
+                        "WHERE id = %d",
+                user.getUsername(), user.getFullName(), user.getPhoneNumber(),
+                user.getId());
+        statement.executeUpdate(query);
     }
 
     public void delete(Long id) throws SQLException {

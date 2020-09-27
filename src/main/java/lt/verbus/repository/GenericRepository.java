@@ -1,6 +1,6 @@
 package lt.verbus.repository;
 
-import lt.verbus.exception.UserNotFoundException;
+import lt.verbus.exception.EntityNotFoundException;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -9,7 +9,6 @@ import java.util.List;
 public abstract class GenericRepository<T> {
     protected final Connection connection;
     protected final Statement statement;
-    protected PreparedStatement preparedStatement;
     private final String databaseTableName;
 
     protected GenericRepository(Connection connection, String databaseTableName) throws SQLException {
@@ -24,10 +23,10 @@ public abstract class GenericRepository<T> {
         return convertTableToList(table);
     }
 
-    protected T findByUniqueCode(String codeColumnName, String code) throws SQLException, UserNotFoundException {
+    protected T findByUniqueCode(String codeColumnName, String code) throws SQLException, EntityNotFoundException {
         String query = String.format("SELECT * FROM %s WHERE %s = \"%s\"", databaseTableName, codeColumnName, code);
         ResultSet table = statement.executeQuery(query);
-        if(!table.next()) throw new UserNotFoundException();
+        if(!table.next()) throw new EntityNotFoundException();
         return convertTableToObject(table);
     }
 
@@ -38,7 +37,7 @@ public abstract class GenericRepository<T> {
         return convertTableToObject(table);
     }
 
-    abstract T save(T t) throws SQLException, UserNotFoundException;
+    abstract T save(T t) throws SQLException, EntityNotFoundException;
 
     abstract void update(T t) throws SQLException;
 

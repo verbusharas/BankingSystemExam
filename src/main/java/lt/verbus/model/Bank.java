@@ -33,7 +33,7 @@ public class Bank {
 
     @Override
     public String toString() {
-        return String.format("[BANK] |%d %-8s| %-15s",
-                id, bic, name);
+        return String.format("[BANK] |%-8s| %-15s",
+                bic, name);
     }
 }

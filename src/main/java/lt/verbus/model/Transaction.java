@@ -3,7 +3,7 @@ package lt.verbus.model;
 import java.sql.Timestamp;
 
 public class Transaction {
-    private Long id;
+    private long id;
     private BankAccount sender;
     private BankAccount receiver;
     private double amount;
@@ -13,11 +13,11 @@ public class Transaction {
         timestamp = new Timestamp(System.currentTimeMillis());
     }
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -51,5 +51,16 @@ public class Transaction {
 
     public void setTimestamp(Timestamp timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("[TRANSACTION] %s | (%20s) %14s  -> | %-14s (%20s) |  %.2f EUR ",
+                timestamp.toString(),
+                sender == null? "" : sender.getIban(),
+                sender == null? "TOP UP (+)" : sender.getHolder().getFullName(),
+                receiver == null? "(-) WITHDRAW" : receiver.getHolder().getFullName(),
+                receiver == null? "" : receiver.getIban(),
+                getAmount());
     }
 }

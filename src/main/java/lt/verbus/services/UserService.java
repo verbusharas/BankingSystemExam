@@ -1,6 +1,6 @@
 package lt.verbus.services;
 
-import lt.verbus.exception.UserNotFoundException;
+import lt.verbus.exception.EntityNotFoundException;
 import lt.verbus.model.User;
 import lt.verbus.repository.UserRepository;
 
@@ -19,27 +19,23 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User findByUsername(String username) throws SQLException, UserNotFoundException {
+    public User findByUsername(String username) throws SQLException, EntityNotFoundException {
         return userRepository.findByUsername(username);
     }
 
     public User findById(long id) throws SQLException {
-        //TODO: validate if exists
         return userRepository.findById(id);
     }
 
-    public User save(User user) throws SQLException, UserNotFoundException {
-        //TODO: validate if unique
+    public User save(User user) throws SQLException, EntityNotFoundException {
         return userRepository.save(user);
     }
 
-    public void update(User user) {
-        //TODO: validate if exists
+    public void update(User user) throws SQLException {
         userRepository.update(user);
     }
 
     public void delete(Long id) throws SQLException {
-        //TODO: validate if exists
         userRepository.delete(id);
     }
 

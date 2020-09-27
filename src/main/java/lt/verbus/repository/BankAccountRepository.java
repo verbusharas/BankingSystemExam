@@ -1,7 +1,7 @@
 package lt.verbus.repository;
 
 import lt.verbus.config.QueriesMySql;
-import lt.verbus.exception.UserNotFoundException;
+import lt.verbus.exception.EntityNotFoundException;
 import lt.verbus.model.*;
 
 import java.sql.*;
@@ -17,7 +17,7 @@ public class BankAccountRepository extends GenericRepository<BankAccount> {
         return super.findAll();
     }
 
-    public BankAccount findByIban(String iban) throws SQLException, UserNotFoundException {
+    public BankAccount findByIban(String iban) throws SQLException, EntityNotFoundException {
         return super.findByUniqueCode("iban", iban);
     }
 
@@ -37,22 +37,35 @@ public class BankAccountRepository extends GenericRepository<BankAccount> {
     }
 
     @Override
-    public BankAccount save(BankAccount bankAccount) throws SQLException, UserNotFoundException {
+    public BankAccount save(BankAccount bankAccount) throws SQLException, EntityNotFoundException {
         String query = String.format("INSERT INTO bank_account " +
                         "(bank_id, iban, card_type, user_id, balance) " +
-                        "VALUES (%s, %s, %s, %s, %s)",
+                        "VALUES (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\")",
                 bankAccount.getBank().getId(),
                 bankAccount.getIban(),
                 bankAccount.getCardType().toString(),
                 bankAccount.getHolder().getId(),
                 bankAccount.getBalance());
-        statement.executeQuery(query);
+        statement.execute(query);
         return findByIban(bankAccount.getIban());
     }
 
     @Override
-    public void update(BankAccount bankAccount) {
-        //TODO implement update
+    public void update(BankAccount bankAccount) throws SQLException {
+        String query = String.format("UPDATE bank_account SET " +
+                        "bank_id = %d, " +
+                        "iban = \"%s\", " +
+                        "card_type = \"%s\", " +
+                        "user_id = %d, " +
+                        "balance = %.2f " +
+                        "WHERE id = %d",
+                bankAccount.getBank().getId(),
+                bankAccount.getIban(),
+                bankAccount.getCardType().toString(),
+                bankAccount.getHolder().getId(),
+                bankAccount.getBalance(),
+                bankAccount.getId());
+        statement.executeUpdate(query);
     }
 
     public void delete(Long id) throws SQLException {
@@ -77,14 +90,12 @@ public class BankAccountRepository extends GenericRepository<BankAccount> {
             statement.executeUpdate(queryForReceiver);
             connection.commit();
         } catch (Exception e) {
-            System.out.println("[BankAccountRepository] Transfer unsuccesful. Rolling back changes.");
             e.printStackTrace();
             connection.rollback();
             return false;
         } finally {
             connection.setAutoCommit(true);
         }
-        System.out.println("[BankAccountRepository] Transfer Succesful.");
         return true;
     }
 

@@ -59,7 +59,7 @@ public class BankAccount {
 
     @Override
     public String toString() {
-        return String.format("[BANK ACCOUNT] |%-3d %-15s| %-15s |  %8s EUR | %6s | %s", id, iban, bank.getName(), balance, cardType, holder.getFullName());
+        return String.format("[BANK ACCOUNT] |%-15s| %-15s |  %8s EUR | %6s | %s", iban, bank.getName(), balance, cardType, holder.getFullName());
     }
 
 }
