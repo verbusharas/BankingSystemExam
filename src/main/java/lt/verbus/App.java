@@ -6,15 +6,10 @@ import lt.verbus.repository.*;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Random;
 
 public class App {
     public static void main(String[] args) throws IOException, SQLException, EntityNotFoundException {
         new Controller().launchApp();
         ConnectionPool.closeConnections();
     }
-
-
-
-
 }

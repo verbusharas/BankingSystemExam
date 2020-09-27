@@ -33,7 +33,6 @@ public class TransactionService {
         return transactionRepository.findAllByBankAccount(bankAccount);
     }
 
-
     public Transaction findByTimestamp(String timestampString) throws SQLException, EntityNotFoundException {
         return transactionRepository.findByTimestamp(timestampString);
     }
@@ -41,7 +40,6 @@ public class TransactionService {
     public Transaction findById(Long id) throws SQLException {
         return transactionRepository.findById(id);
     }
-
 
 
     public void update(Transaction transaction) throws SQLException {
@@ -69,6 +67,5 @@ public class TransactionService {
             }
         }
     }
-
 
 }

@@ -34,7 +34,6 @@ public class ListPrinter {
         }
     }
 
-
     public static void printUsernameCheatList(List<User> users) {
         System.out.print("If in doubt, try one of these: { ");
         users.forEach(user -> System.out.print(user.getUsername() + " "));

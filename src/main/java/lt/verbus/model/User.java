@@ -1,8 +1,5 @@
 package lt.verbus.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class User {
 
     private long id;

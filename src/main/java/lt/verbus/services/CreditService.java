@@ -53,7 +53,6 @@ public class CreditService {
         BankAccount sender = transaction.getSender();
         BankAccount receiver = transaction.getReceiver();
 
-
         double transferedAmount = transaction.getAmount();
         Timestamp timeOfEvent = transaction.getTimestamp();
 
@@ -94,8 +93,5 @@ public class CreditService {
                 update(receiverCredit);
             }
         }
-
-
     }
-
 }

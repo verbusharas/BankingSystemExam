@@ -1,7 +1,5 @@
 package lt.verbus.model;
 
-import java.util.List;
-
 public class Bank {
     private long id;
     private String bic;

@@ -4,7 +4,6 @@ import lt.verbus.model.User;
 
 public class UserHomeMenu {
     public static void display(User user){
-
         System.out.println("--- WELCOME, "
                 + user.getUsername().toUpperCase() +"! ---");
         System.out.println("- Name: " + user.getFullName());

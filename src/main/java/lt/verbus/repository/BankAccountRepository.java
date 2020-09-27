@@ -1,6 +1,5 @@
 package lt.verbus.repository;
 
-import lt.verbus.config.QueriesMySql;
 import lt.verbus.exception.EntityNotFoundException;
 import lt.verbus.model.*;
 
@@ -22,7 +21,7 @@ public class BankAccountRepository extends GenericRepository<BankAccount> {
     }
 
     public List<BankAccount> findAllBelongingTo(Object object) throws SQLException {
-        String query = (QueriesMySql.FIND_ALL_FROM + "bank_account WHERE ");
+        String query = ("SELECT * FROM bank_account WHERE ");
         if (object instanceof User) {
             query += "user_id = " + ((User) object).getId();
         } else if (object instanceof Bank) {
