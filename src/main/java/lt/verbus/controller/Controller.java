@@ -72,7 +72,7 @@ public class Controller {
             RegisterMenu.displayUsernameRequest();
             user.setUsername(consoleInput.nextLine());
             try {
-                userRepository.findByUsername(user.getUsername());
+                userService.findByUsername(user.getUsername());
             } catch (EntityNotFoundException ex) {
                 break;
             }
@@ -119,7 +119,7 @@ public class Controller {
                     stayInMenu = false;
                     break;
                 case "1":
-                    ListPrinter.printNumeratedListToConsole(bankAccountRepository.findAllBelongingTo(currentUser));
+                    ListPrinter.printNumeratedListToConsole(bankAccountService.findAllBelongingTo(currentUser));
                     ListPrinter.printNumeratedListToConsole(creditService.findAllByDebtor(currentUser));
                     break;
                 case "2":
@@ -149,13 +149,13 @@ public class Controller {
 
     private void switchToTransactionListMenu() throws SQLException {
         BankAccount selectedBankAccount = askToChooseFromList(
-                bankAccountRepository.findAllBelongingTo(currentUser), "bank account");
+                bankAccountService.findAllBelongingTo(currentUser), "bank account");
         ListPrinter.printNumeratedListToConsole(transactionService.findAllByBankAccount(selectedBankAccount));
     }
 
     private void switchToExportTransactionsMenu() throws SQLException {
         BankAccount selectedBankAccount = askToChooseFromList(
-                bankAccountRepository.findAllBelongingTo(currentUser), "bank account");
+                bankAccountService.findAllBelongingTo(currentUser), "bank account");
         UserSpecifyFileNameMenu.display();
         ListPrinter.printListToFile(transactionService
                 .findAllByBankAccount(selectedBankAccount), consoleInput.nextLine());
@@ -168,7 +168,7 @@ public class Controller {
         double amount = Double.parseDouble(consoleInput.nextLine());
         //TODO: validate for numeric input
         BankAccount selectedBankAccount = askToChooseFromList(
-                bankAccountRepository.findAllBelongingTo(currentUser), "bank account");
+                bankAccountService.findAllBelongingTo(currentUser), "bank account");
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);
         transaction.setSender(null);
@@ -182,7 +182,7 @@ public class Controller {
         double amount = Double.parseDouble(consoleInput.nextLine());
         //TODO: validate for numeric input
         BankAccount selectedBankAccount = askToChooseFromList(
-                bankAccountRepository.findAllBelongingTo(currentUser), "bank account");
+                bankAccountService.findAllBelongingTo(currentUser), "bank account");
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);
         transaction.setSender(selectedBankAccount);
@@ -200,7 +200,7 @@ public class Controller {
         double amount = Double.parseDouble(consoleInput.nextLine());
         //TODO: validate for numeric input
         BankAccount selectedSenderBankAccount = askToChooseFromList(
-                bankAccountRepository.findAllBelongingTo(currentUser), "bank account");
+                bankAccountService.findAllBelongingTo(currentUser), "bank account");
         User receivingUser = null;
         UserTransferMenu.displayReceiverRequest();
         ListPrinter.printUsernameCheatList(userService.findAll());
